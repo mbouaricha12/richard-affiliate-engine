@@ -23,6 +23,16 @@ const dropoffs={
  eligibilityToQualification:funnel.eligibilityCompleted?Math.round((1-funnel.qualified/funnel.eligibilityCompleted)*100):0,
  qualificationToClick:funnel.qualified?Math.round((1-funnel.affiliateClicks/funnel.qualified)*100):0
 };
+const diagnostics=[];
+if(funnel.landingViews>=20){
+ const stages=[
+  {stage:'landing_to_eligibility',drop:dropoffs.landingToEligibility,action:'Clarifier la promesse et rendre le premier choix plus évident.'},
+  {stage:'eligibility_to_qualification',drop:dropoffs.eligibilityToQualification,action:'Réduire la friction entre éligibilité et question marché.'},
+  {stage:'qualification_to_click',drop:dropoffs.qualificationToClick,action:'Clarifier les options et les conditions sans pression commerciale.'}
+ ];
+ stages.sort((a,b)=>b.drop-a.drop);
+ diagnostics.push({priority:'FUNNEL',stage:stages[0].stage,dropoff:stages[0].drop,action:stages[0].action});
+}
 const recommendations=acquisition.map(x=>{let status='LEARN';let reason='Données insuffisantes';if(x.visitors>=20&&x.qualificationRate<20){status='CORRECT';reason='Qualification faible';}else if(x.qualified>=10&&x.clickRate<15){status='CORRECT';reason='Peu de clics après qualification';}else if(x.visitors>=20&&x.qualificationRate>=35&&x.clickRate>=25){status='CONTINUE';reason='Progression funnel encourageante';}return {...x,status,reason};});
-const campaignSummary=Object.fromEntries(Object.entries(campaigns).map(([k,v])=>[k,{events:v.events,visitors:v.visitors.size,qualified:v.qualified,clicks:v.clicks}]));return Response.json({visitors,qualified,affiliateClicks,brokerClicks,telegramClicks,whatsappClicks,commission,funnel,dropoffs,verifiedTotals,businessByBroker,campaigns:campaignSummary,acquisition,recommendations,events:ev.length,businessEvents:be.length})};
+const campaignSummary=Object.fromEntries(Object.entries(campaigns).map(([k,v])=>[k,{events:v.events,visitors:v.visitors.size,qualified:v.qualified,clicks:v.clicks}]));return Response.json({visitors,qualified,affiliateClicks,brokerClicks,telegramClicks,whatsappClicks,commission,funnel,dropoffs,diagnostics,verifiedTotals,businessByBroker,campaigns:campaignSummary,acquisition,recommendations,events:ev.length,businessEvents:be.length})};
 export const config={path:'/api/summary'};
