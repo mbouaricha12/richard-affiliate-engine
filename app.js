@@ -14,12 +14,12 @@ window.raeBusiness=async()=>{const t=sessionStorage.rae_token||document.querySel
 // RAE campaign links — one measurable URL per acquisition channel.
 const campaignBase=location.origin+'/';
 const CAMPAIGNS=[
-  ['Telegram','telegram','community','sprint10','education'],
-  ['WhatsApp','whatsapp','community','sprint10','education'],
-  ['TikTok','tiktok','organic_social','sprint10','education'],
-  ['Facebook','facebook','organic_social','sprint10','education'],
-  ['Instagram','instagram','organic_social','sprint10','education'],
-  ['Pinterest','pinterest','organic_social','sprint10','education']
+  ['Telegram','telegram','community','sprint10','checklist'],
+  ['WhatsApp','whatsapp','community','sprint10','checklist'],
+  ['TikTok','tiktok','organic_social','sprint10','synthetic_vs_forex'],
+  ['Facebook','facebook','organic_social','sprint10','checklist'],
+  ['Instagram','instagram','organic_social','sprint10','synthetic_vs_forex'],
+  ['Pinterest','pinterest','organic_social','sprint10','checklist']
 ];
 function campaignUrl(source,medium,campaign,content){
   const u=new URL(campaignBase);u.searchParams.set('utm_source',source);u.searchParams.set('utm_medium',medium);u.searchParams.set('utm_campaign',campaign);u.searchParams.set('utm_content',content);return u.href;
