@@ -17,6 +17,12 @@ const businessByBroker={deriv:{broker_signup:0,first_deposit:0,first_trade:0,act
 for(const x of be){const b=x?.broker;if(!businessByBroker[b])continue;if(x?.event==='commission')businessByBroker[b].commission+=Number(x.amount)||0;else if(Object.hasOwn(businessByBroker[b],x?.event))businessByBroker[b][x.event]++;}
 const verifiedTotals={broker_signup:0,first_deposit:0,first_trade:0,active_trader:0,commission:0};
 for(const b of Object.values(businessByBroker))for(const k of Object.keys(verifiedTotals))verifiedTotals[k]+=b[k]||0;
+const funnel={landingViews:ev.filter(x=>x?.event==='landing_view').length,eligibilityCompleted:ev.filter(x=>x?.event==='eligibility_complete').length,qualified,brokerRoutes:ev.filter(x=>x?.event==='broker_route').length,affiliateClicks,communityClicks:telegramClicks+whatsappClicks};
+const dropoffs={
+ landingToEligibility:funnel.landingViews?Math.round((1-funnel.eligibilityCompleted/funnel.landingViews)*100):0,
+ eligibilityToQualification:funnel.eligibilityCompleted?Math.round((1-funnel.qualified/funnel.eligibilityCompleted)*100):0,
+ qualificationToClick:funnel.qualified?Math.round((1-funnel.affiliateClicks/funnel.qualified)*100):0
+};
 const recommendations=acquisition.map(x=>{let status='LEARN';let reason='Données insuffisantes';if(x.visitors>=20&&x.qualificationRate<20){status='CORRECT';reason='Qualification faible';}else if(x.qualified>=10&&x.clickRate<15){status='CORRECT';reason='Peu de clics après qualification';}else if(x.visitors>=20&&x.qualificationRate>=35&&x.clickRate>=25){status='CONTINUE';reason='Progression funnel encourageante';}return {...x,status,reason};});
-const campaignSummary=Object.fromEntries(Object.entries(campaigns).map(([k,v])=>[k,{events:v.events,visitors:v.visitors.size,qualified:v.qualified,clicks:v.clicks}]));return Response.json({visitors,qualified,affiliateClicks,brokerClicks,telegramClicks,whatsappClicks,commission,verifiedTotals,businessByBroker,campaigns:campaignSummary,acquisition,recommendations,events:ev.length,businessEvents:be.length})};
+const campaignSummary=Object.fromEntries(Object.entries(campaigns).map(([k,v])=>[k,{events:v.events,visitors:v.visitors.size,qualified:v.qualified,clicks:v.clicks}]));return Response.json({visitors,qualified,affiliateClicks,brokerClicks,telegramClicks,whatsappClicks,commission,funnel,dropoffs,verifiedTotals,businessByBroker,campaigns:campaignSummary,acquisition,recommendations,events:ev.length,businessEvents:be.length})};
 export const config={path:'/api/summary'};
