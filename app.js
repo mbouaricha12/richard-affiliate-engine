@@ -10,3 +10,18 @@ document.querySelector('#telegram').onclick=()=>track('telegram_join_click');doc
 if(location.hash==='#admin')document.querySelector('#admin').hidden=false;
 window.raeAdmin=async()=>{const t=document.querySelector('#token').value;sessionStorage.rae_token=t;const r=await fetch('/api/summary',{headers:{authorization:`Bearer ${t}`}});if(!r.ok){document.querySelector('#adminmsg').textContent='Accès refusé.';return}const d=await r.json();document.querySelector('#dashboard').hidden=false;document.querySelector('#kpiVisitors').textContent=d.visitors;document.querySelector('#kpiQualified').textContent=d.qualified;document.querySelector('#kpiClicks').textContent=d.affiliateClicks;document.querySelector('#kpiCommission').textContent='$'+d.commission.toFixed(2);document.querySelector('#rate1').textContent=d.visitors?Math.round(d.qualified/d.visitors*100)+'%':'—';document.querySelector('#rate2').textContent=d.qualified?Math.round(d.affiliateClicks/d.qualified*100)+'%':'—';document.querySelector('#kpiTelegram').textContent=d.telegramClicks||0;document.querySelector('#kpiWhatsapp').textContent=d.whatsappClicks||0;document.querySelector('#kpiDeriv').textContent=d.brokerClicks?.deriv||0;document.querySelector('#kpiHfm').textContent=d.brokerClicks?.hfm||0;document.querySelector('#raw').textContent=JSON.stringify(d,null,2)};
 window.raeBusiness=async()=>{const t=sessionStorage.rae_token||document.querySelector('#token').value;const event=document.querySelector('#bevent').value,broker=document.querySelector('#bbroker').value,amount=Number(document.querySelector('#bamount').value||0),note=document.querySelector('#bnote').value;const r=await fetch('/api/business-events',{method:'POST',headers:{'content-type':'application/json',authorization:`Bearer ${t}`},body:JSON.stringify({event,broker,amount,note})});document.querySelector('#adminmsg').textContent=r.ok?'Enregistré.':'Erreur / accès refusé.';if(r.ok)raeAdmin()};
+
+// RAE campaign links — one measurable URL per acquisition channel.
+const campaignBase=location.origin+'/';
+const CAMPAIGNS=[
+  ['Telegram','telegram','community','sprint10','education'],
+  ['WhatsApp','whatsapp','community','sprint10','education'],
+  ['TikTok','tiktok','organic_social','sprint10','education'],
+  ['Facebook','facebook','organic_social','sprint10','education'],
+  ['Instagram','instagram','organic_social','sprint10','education'],
+  ['Pinterest','pinterest','organic_social','sprint10','education']
+];
+function campaignUrl(source,medium,campaign,content){
+  const u=new URL(campaignBase);u.searchParams.set('utm_source',source);u.searchParams.set('utm_medium',medium);u.searchParams.set('utm_campaign',campaign);u.searchParams.set('utm_content',content);return u.href;
+}
+window.renderCampaignLinks=()=>{const box=document.querySelector('#campaignLinks');if(!box)return;box.innerHTML=CAMPAIGNS.map(([name,s,m,c,k])=>`<div class="campaignrow"><div><b>${name}</b><small>${campaignUrl(s,m,c,k)}</small></div><button type="button" data-copy="${campaignUrl(s,m,c,k)}">Copier</button></div>`).join('');box.querySelectorAll('[data-copy]').forEach(b=>b.onclick=async()=>{await navigator.clipboard.writeText(b.dataset.copy);b.textContent='Copié ✓';setTimeout(()=>b.textContent='Copier',1200)})};
