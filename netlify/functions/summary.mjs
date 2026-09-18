@@ -13,5 +13,9 @@ for(const x of ev){
  if(x?.event==='telegram_join_click'||x?.event==='whatsapp_join_click')breakdown[key].communityClicks++;
 }
 const acquisition=Object.values(breakdown).map(v=>({source:v.source,content:v.content,visitors:v.visitors.size,qualified:v.qualified,clicks:v.clicks,communityClicks:v.communityClicks,qualificationRate:v.visitors?Math.round(v.qualified/v.visitors*100):0,clickRate:v.qualified?Math.round(v.clicks/v.qualified*100):0}));
-const campaignSummary=Object.fromEntries(Object.entries(campaigns).map(([k,v])=>[k,{events:v.events,visitors:v.visitors.size,qualified:v.qualified,clicks:v.clicks}]));return Response.json({visitors,qualified,affiliateClicks,brokerClicks,telegramClicks,whatsappClicks,commission,campaigns:campaignSummary,acquisition,events:ev.length,businessEvents:be.length})};
+const businessByBroker={deriv:{broker_signup:0,first_deposit:0,first_trade:0,active_trader:0,commission:0},hfm:{broker_signup:0,first_deposit:0,first_trade:0,active_trader:0,commission:0}};
+for(const x of be){const b=x?.broker;if(!businessByBroker[b])continue;if(x?.event==='commission')businessByBroker[b].commission+=Number(x.amount)||0;else if(Object.hasOwn(businessByBroker[b],x?.event))businessByBroker[b][x.event]++;}
+const verifiedTotals={broker_signup:0,first_deposit:0,first_trade:0,active_trader:0,commission:0};
+for(const b of Object.values(businessByBroker))for(const k of Object.keys(verifiedTotals))verifiedTotals[k]+=b[k]||0;
+const campaignSummary=Object.fromEntries(Object.entries(campaigns).map(([k,v])=>[k,{events:v.events,visitors:v.visitors.size,qualified:v.qualified,clicks:v.clicks}]));return Response.json({visitors,qualified,affiliateClicks,brokerClicks,telegramClicks,whatsappClicks,commission,verifiedTotals,businessByBroker,campaigns:campaignSummary,acquisition,events:ev.length,businessEvents:be.length})};
 export const config={path:'/api/summary'};
