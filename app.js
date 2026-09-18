@@ -1,7 +1,7 @@
 const LINKS={deriv:'https://t.deriv.link?t=N4YTBACHU9HN',hfm:'https://www.hfm.com/sv/en/?refid=30477807'};
 const qs=new URLSearchParams(location.search);const vid=localStorage.rae_vid||(localStorage.rae_vid=crypto.randomUUID());
 const utm={source:qs.get('utm_source')||'direct',medium:qs.get('utm_medium')||'none',campaign:qs.get('utm_campaign')||'none',content:qs.get('utm_content')||'none'};
-async function track(event,props={}){try{await fetch('/api/events',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({event,visitorId:vid,utm,props})})}catch{}}
+const sent=new Set();async function track(event,props={}){const once=['landing_view','eligibility_complete','qualification_complete','broker_route'];const key=event+':'+JSON.stringify(props);if(once.includes(event)&&sent.has(key))return;try{const r=await fetch('/api/events',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({event,visitorId:vid,utm,props})});if(r.ok&&once.includes(event))sent.add(key)}catch{}}
 track('landing_view');
 const eligibilityMsg=document.querySelector('#eligibilityMsg'),qualification=document.querySelector('#qualification'),result=document.querySelector('#result'),routes=document.querySelector('#routes');
 document.querySelectorAll('.eligibility-choice').forEach(b=>b.onclick=()=>{const ok=b.dataset.eligible==='yes';track('eligibility_complete',{eligible:ok?'yes':'no'});if(ok){qualification.hidden=false;eligibilityMsg.hidden=true;qualification.scrollIntoView({behavior:'smooth'});}else{qualification.hidden=true;result.hidden=true;eligibilityMsg.hidden=false;document.querySelector('.dark').scrollIntoView({behavior:'smooth'});}});
