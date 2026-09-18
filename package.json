@@ -1,0 +1,1 @@
+{"name":"richard-affiliate-engine","version":"0.6.0","private":true,"dependencies":{"@netlify/blobs":"latest"},"scripts":{"check":"node --check app.js && node --check netlify/functions/events.mjs && node --check netlify/functions/business-events.mjs && node --check netlify/functions/summary.mjs"}}
