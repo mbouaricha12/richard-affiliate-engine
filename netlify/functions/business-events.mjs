@@ -1,0 +1,5 @@
+import {getStore,getDeployStore} from '@netlify/blobs';
+const ALLOWED=new Set(['broker_signup','first_deposit','first_trade','active_trader','commission']);
+const auth=req=>{const t=Netlify.env.get('RAE_ADMIN_TOKEN');return !!t&&req.headers.get('authorization')===`Bearer ${t}`};
+export default async(req,ctx)=>{if(!auth(req))return new Response('Unauthorized',{status:401});if(req.method!=='POST')return new Response('Method not allowed',{status:405});let b;try{b=await req.json()}catch{return new Response('Bad JSON',{status:400})}if(!ALLOWED.has(b.event)||!['deriv','hfm'].includes(b.broker))return new Response('Invalid',{status:400});const store=ctx.deploy?.context==='production'?getStore('rae-business-events'):getDeployStore('rae-business-events');await store.setJSON(`${Date.now()}-${crypto.randomUUID()}`,{event:b.event,broker:b.broker,amount:b.event==='commission'?Math.max(0,Number(b.amount)||0):0,note:String(b.note||'').slice(0,160),ts:new Date().toISOString()});return new Response(null,{status:202})};
+export const config={path:'/api/business-events'};
