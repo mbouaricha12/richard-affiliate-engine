@@ -1,0 +1,5 @@
+import {getStore,getDeployStore} from '@netlify/blobs';
+const ALLOWED=new Set(['landing_view','eligibility_complete','qualification_complete','broker_route','affiliate_click','telegram_join_click','whatsapp_join_click']);
+const clean=(v,n=100)=>String(v??'').replace(/[<>\r\n]/g,' ').slice(0,n);
+export default async(req,ctx)=>{if(req.method!=='POST')return new Response('Method not allowed',{status:405});let b;try{b=await req.json()}catch{return new Response('Bad JSON',{status:400})}if(!ALLOWED.has(b.event))return new Response('Invalid event',{status:400});const store=ctx.deploy?.context==='production'?getStore('rae-events'):getDeployStore('rae-events');const e={event:b.event,visitorId:clean(b.visitorId,80),utm:{source:clean(b.utm?.source),medium:clean(b.utm?.medium),campaign:clean(b.utm?.campaign),content:clean(b.utm?.content)},props:{eligible:clean(b.props?.eligible),market:clean(b.props?.market),broker:clean(b.props?.broker)},ts:new Date().toISOString()};await store.setJSON(`${Date.now()}-${crypto.randomUUID()}`,e);return new Response(null,{status:202})};
+export const config={path:'/api/events'};
